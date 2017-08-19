@@ -3,15 +3,11 @@
     [parameter(Mandatory=$true)]
 	[string]$childBranchName,
     
-	[string]$masterBranchName = 'sprint',
-
-	[string]$repoLocation = "c:\core\app\git\ims\"
+	[string]$masterBranchName = 'master'
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . $scriptDir\lib\lib-GitUtils.ps1
-
-$repoLocation = $repoLocation.TrimEnd('\')
 
 $gitStatus = git status -s
 
