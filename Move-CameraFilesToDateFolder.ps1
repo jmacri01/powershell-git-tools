@@ -8,7 +8,7 @@ if (!($directory))
     throw "$directory can not be null"
 }
 
-$colItems = @(Get-ChildItem $directory -Include $Extension | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
+$colItems = @(Get-ChildItem $directory -Include $Extension -Recurse | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
 
 foreach($colItem in $colItems)
 {
@@ -20,7 +20,6 @@ foreach($colItem in $colItems)
     $date = ($colItem.Name -replace ".*(?=\d\d\d\d\-\d\d\-\d\d)", "") -replace "(?<=\d\d\d\d\-\d\d\-\d\d).*", ""
     if($date -match "\d\d\d\d\-\d\d\-\d\d")
     {
-        $directory = $colItem.DirectoryName
         $fileName = $colItem.Name
 
         if(-not (Test-Path "$directory\$date"))
