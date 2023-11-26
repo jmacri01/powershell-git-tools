@@ -9,29 +9,32 @@ if (!($directory))
     throw "$directory can not be null"
 }
 
-while(1)
+$dirSize = 0
+
+$colItems = @(Get-ChildItem $directory -Recurse | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
+
+foreach ($colItem in $colItems)
 {
-    $dirSize = 0
+	$dirSize = $dirSize + $colItem.Length / 1GB
+}
 
-    $colItems = @(Get-ChildItem $directory -Include $Extension -Recurse | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
+#remove old files
+$i = 0;
+while(($dirSize -gt $sizeLimitGb) -and $colItems[$i])
+{
+	remove-item $colItems[$i].FullName
+	$dirSize -= $colItems[$i].Length / 1GB
+	$colItems[$i].FullName + " removed!"
+	$i++;
+}
 
-    foreach ($i in $colItems)
-    {
-        $dirSize = $dirSize + $i.Length / 1GB
-    }
-
-    if(($dirSize -lt $sizeLimitGb) -or !($colItems[0]))
-    {
-        return
-    }
-
-    remove-item $colItems[0].FullName
-    $colItems[0].FullName + " removed!"
-
-    $dirItems = @(Get-ChildItem $colItems[0].DirectoryName -Recurse | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
-    if($dirItems.Count -eq 0)
-    {
-        Remove-Item $colItems[0].DirectoryName -Recurse -Force
-        $colItems[0].DirectoryName + " removed!"
-    }
+#cleanup empty directories
+$dirs = @(Get-ChildItem $directory -Recurse | Where-Object { $_.Mode -eq 'd-----' });
+foreach($dir in $dirs)
+{
+	$dirItems = @(Get-ChildItem $dir -Recurse);
+	if($dirItems.Count -gt 0)
+	{
+		Remove-Item $dir -Recurse -Force
+	}
 }
