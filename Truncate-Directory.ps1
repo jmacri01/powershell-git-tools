@@ -32,9 +32,9 @@ while(($dirSize -gt $sizeLimitGb) -and $colItems[$i])
 $dirs = @(Get-ChildItem $directory -Recurse | Where-Object { $_.Mode -eq 'd-----' });
 foreach($dir in $dirs)
 {
-	$dirItems = @(Get-ChildItem $dir -Recurse);
-	if($dirItems.Count -gt 0)
+	$dirItems = @(Get-ChildItem $dir.FullName -Recurse);
+	if($dirItems.Count -eq 0)
 	{
-		Remove-Item $dir -Recurse -Force
+		Remove-Item $dir.FullName -Recurse -Force
 	}
 }
