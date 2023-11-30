@@ -1,17 +1,18 @@
 ﻿param
 (
-    [string]$directory,
-    [decimal]$sizeLimitGb
+    [string]$Directory,
+    [decimal]$SizeLimitGb,
+	[string]$ArchiveDirectory
 )
 
-if (!($directory))
+if (!($Directory))
 {
-    throw "$directory can not be null"
+    throw "$Directory can not be null"
 }
 
 $dirSize = 0
 
-$colItems = @(Get-ChildItem $directory -Recurse | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
+$colItems = @(Get-ChildItem $Directory -Recurse | sort-object -property LastWriteTime | Where-Object { $_.Mode -ne 'd-----' })
 
 foreach ($colItem in $colItems)
 {
@@ -20,8 +21,14 @@ foreach ($colItem in $colItems)
 
 #remove old files
 $i = 0;
-while(($dirSize -gt $sizeLimitGb) -and $colItems[$i])
+while(($dirSize -gt $SizeLimitGb) -and $colItems[$i])
 {
+	if($ArchiveDirectory)
+	{
+		$outputPath = Join-Path -Path $ArchiveDirectory -ChildPath $colItems[$i].Name
+		Write-Host "Archiving $($colItems[$i].FullName) to $($outputPath)"		
+		ffmpeg -i $colItems[$i].FullName -vcodec libx265 -crf 28 $outputPath -y
+	}
 	remove-item $colItems[$i].FullName
 	$dirSize -= $colItems[$i].Length / 1GB
 	$colItems[$i].FullName + " removed!"
@@ -29,7 +36,7 @@ while(($dirSize -gt $sizeLimitGb) -and $colItems[$i])
 }
 
 #cleanup empty directories
-$dirs = @(Get-ChildItem $directory -Recurse | Where-Object { $_.Mode -eq 'd-----' });
+$dirs = @(Get-ChildItem $Directory -Recurse | Where-Object { $_.Mode -eq 'd-----' });
 foreach($dir in $dirs)
 {
 	$dirItems = @(Get-ChildItem $dir.FullName -Recurse);
