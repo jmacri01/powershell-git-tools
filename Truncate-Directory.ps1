@@ -23,7 +23,7 @@ foreach ($colItem in $colItems)
 $i = 0;
 while(($dirSize -gt $SizeLimitGb) -and $colItems[$i])
 {
-	if($ArchiveDirectory && $colItems[$i].Extension -eq ".mp4")
+	if($ArchiveDirectory -and $colItems[$i].Extension -eq ".mp4")
 	{
 		$outputPath = Join-Path -Path $ArchiveDirectory -ChildPath $colItems[$i].Name
 		Write-Host "Archiving $($colItems[$i].FullName) to $($outputPath)"		
